@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Faktabas - Alla Världens Länder</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #2c3e50; }
+        #search { display: block; width: 80%; max-width: 400px; margin: 20px auto; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
+        #countries-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+        .country-card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 250px; padding: 15px; text-align: center; transition: transform 0.2s; }
+        .country-card:hover { transform: translateY(-5px); }
+        .flag { width: 100px; height: auto; border: 1px solid #ddd; margin-bottom: 10px; }
+        .country-name { font-size: 18px; font-weight: bold; margin: 10px 0; color: #2980b9; }
+        .info { font-size: 14px; text-align: left; line-height: 1.5; }
+    </style>
+</head>
+<body>
 
+    <h1>Fakta om ALLA världens länder</h1>
+    <input type="text" id="search" placeholder="Sök efter ett land...">
+
+    <div id="countries-container">Laddar länder...</div>
+
+    <script>
+        let allCountries = [];
+        const container = document.getElementById('countries-container');
+        const searchInput = document.getElementById('search');
+
+        // Hämta data om ALLA länder från REST Countries API
+        async function fetchCountries() {
+            try {
+                const response = await fetch('https://restcountries.com');
+                allCountries = await response.json();
+                
+                // Sortera länderna i bokstavsordning på engelska namn
+                allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                
+                displayCountries(allCountries);
+            } catch (error) {
+                container.innerHTML = 'Kunde inte ladda landsdata. Försök igen senare.';
+                console.error(error);
+            }
+        }
+
+        // Funktion för att rita ut länderna på skärmen
+        function displayCountries(countries) {
+            container.innerHTML = '';
+            if(countries.length === 0) {
+                container.innerHTML = 'Inga länder matchade din sökning.';
+                return;
+            }
+
+            countries.forEach(country => {
+                const card = document.createElement('div');
+                card.className = 'country-card';
+
+                const name = country.name.common;
+                const nativeName = country.name.official;
+                const flag = country.flags.svg;
+                const capital = country.capital ? country.capital[0] : 'Saknas';
+                const population = country.population.toLocaleString();
+                const region = country.region;
+
+                card.innerHTML = `
+                    <img src="${flag}" alt="Flagga för ${name}" class="flag">
+                    <div class="country-name">${name}</div>
+                    <div class="info">
+                        <strong>Officiellt namn:</strong> ${nativeName}<br>
+                        <strong>Huvudstad:</strong> ${capital}<br>
+                        <strong>Region:</strong> ${region}<br>
+                        <strong>Befolkning:</strong> ${population}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Sökfunktion
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allCountries.filter(country => 
+                country.name.common.toLowerCase().includes(searchTerm)
+            );
+            displayCountries(filtered);
+        });
+
+        // Starta hämtningen när sidan laddas
+        fetchCountries();
+    </script>
+</body>
+</html>
