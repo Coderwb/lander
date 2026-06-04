@@ -5,50 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Faktabas - Alla Världens Länder</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        h1 { text-align: center; color: #2c3e50; }
-        #search { display: block; width: 80%; max-width: 400px; margin: 20px auto; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
-        #countries-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; margin: 0 auto; }
-        .country-card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 250px; padding: 15px; text-align: center; transition: transform 0.2s; }
-        .country-card:hover { transform: translateY(-5px); }
-        .flag { width: 100px; height: auto; border: 1px solid #ddd; margin-bottom: 10px; }
-        .country-name { font-size: 18px; font-weight: bold; margin: 10px 0; color: #2980b9; }
-        .info { font-size: 14px; text-align: left; line-height: 1.5; }
+        /* Grön och fräsch bakgrund för hela sidan */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #1e4620, #2e7d32); 
+            min-height: 100vh;
+            margin: 0; 
+            padding: 40px 20px; 
+            color: #fff; 
+        }
+        
+        h1 { 
+            text-align: center; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        /* Tydlig och centrerad sökruta */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        #search { 
+            width: 100%; 
+            max-width: 500px; 
+            padding: 15px 25px; 
+            font-size: 18px; 
+            border: none; 
+            border-radius: 30px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #search:focus {
+            box-shadow: 0 4px 20px rgba(255,255,255,0.4);
+            transform: scale(1.02);
+        }
+
+        /* Container för landskorten */
+        #countries-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 25px; 
+            justify-content: center; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+
+        /* Landskorten (Vit/ljus bakgrund för bra kontrast mot texten) */
+        .country-card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+            width: 260px; 
+            padding: 20px; 
+            text-align: center; 
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: #333;
+        }
+
+        .country-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+
+        .flag { 
+            width: 120px; 
+            height: 75px; 
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #eee; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .country-name { 
+            font-size: 20px; 
+            font-weight: bold; 
+            margin-bottom: 12px; 
+            color: #2e7d32; /* Grön text för landets namn */
+        }
+
+        .info { 
+            font-size: 14px; 
+            text-align: left; 
+            line-height: 1.6; 
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .info strong {
+            color: #555;
+        }
+
+        #loading {
+            font-size: 20px;
+            text-align: center;
+            width: 100%;
+            margin-top: 50px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Fakta om ALLA världens länder</h1>
-    <input type="text" id="search" placeholder="Sök efter ett land...">
+    <h1>🌍 Global Faktabas</h1>
+    <p class="subtitle">Sök och hitta information om precis ALLA världens länder</p>
 
-    <div id="countries-container">Laddar länder...</div>
+    <!-- Sökrutan -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Skriv för att söka efter ett land...">
+    </div>
+
+    <!-- Här landar alla kort -->
+    <div id="countries-container">
+        <div id="loading">Hämtar data om alla länder...</div>
+    </div>
 
     <script>
         let allCountries = [];
         const container = document.getElementById('countries-container');
         const searchInput = document.getElementById('search');
 
-        // Hämta data om ALLA länder från REST Countries API
+        // Hämta data från REST Countries API
         async function fetchCountries() {
             try {
                 const response = await fetch('https://restcountries.com');
                 allCountries = await response.json();
                 
-                // Sortera länderna i bokstavsordning på engelska namn
+                // Sortera länderna alfabetiskt
                 allCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
                 
                 displayCountries(allCountries);
             } catch (error) {
-                container.innerHTML = 'Kunde inte ladda landsdata. Försök igen senare.';
+                container.innerHTML = '<div id="loading">Kunde inte ladda data. Prova att ladda om sidan.</div>';
                 console.error(error);
             }
         }
 
-        // Funktion för att rita ut länderna på skärmen
+        // Funktion för att visa länderna
         function displayCountries(countries) {
             container.innerHTML = '';
+            
             if(countries.length === 0) {
-                container.innerHTML = 'Inga länder matchade din sökning.';
+                container.innerHTML = '<div id="loading font-weight:bold;">Inga länder hittades...</div>';
                 return;
             }
 
@@ -60,7 +169,7 @@
                 const nativeName = country.name.official;
                 const flag = country.flags.svg;
                 const capital = country.capital ? country.capital[0] : 'Saknas';
-                const population = country.population.toLocaleString();
+                const population = country.population.toLocaleString('sv-SE');
                 const region = country.region;
 
                 card.innerHTML = `
@@ -69,15 +178,15 @@
                     <div class="info">
                         <strong>Officiellt namn:</strong> ${nativeName}<br>
                         <strong>Huvudstad:</strong> ${capital}<br>
-                        <strong>Region:</strong> ${region}<br>
-                        <strong>Befolkning:</strong> ${population}
+                        <strong>Kontinent:</strong> ${region}<br>
+                        <strong>Invånare:</strong> ${population}
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Sökfunktion
+        // Sökfunktionen som reagerar direkt när man skriver
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filtered = allCountries.filter(country => 
@@ -86,7 +195,7 @@
             displayCountries(filtered);
         });
 
-        // Starta hämtningen när sidan laddas
+        // Starta programmet
         fetchCountries();
     </script>
 </body>
